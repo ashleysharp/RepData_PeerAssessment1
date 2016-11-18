@@ -4,22 +4,165 @@ output:
   html_document:
     keep_md: true
 ---
-
-
 ## Loading and preprocessing the data
 
+First we need to load the relevant packages
+```{r load data, message=FALSE}
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+```
 
+Then we need to read the data into R and convert to date format
+```{r}
+activity <- read.csv("activity.csv")
+activity <- mutate(activity, date = ymd(date))
+```
 
-## What is mean total number of steps taken per day?
+## What is the mean total number of steps taken per day?
 
+The original data shows the number of steps taken per 5-minute interval. Using dplyr we can group by date and summarise the total number of steps taken per day.
+```{r steps per day}
+perday <- activity %>%
+        group_by(date) %>%
+        summarise(steps = sum(steps))
+```
+
+We can then calculate the mean and median number of steps per day.  
+Note: missing days are removed when calculating the mean.
+```{r mean median}
+mean <- mean(perday$steps, na.rm = TRUE)
+median <- median(perday$steps, na.rm = TRUE)
+options(scipen = 1)
+```
+The mean number of steps per day is **`r round(mean)`**  
+The median number of steps per day is **`r median`**
+
+We can also plot a histogram of the number of steps per day.
+```{r histogram, warning=FALSE}
+hist <- ggplot(perday, aes(date, steps))
+hist + geom_histogram(stat="identity") + labs(title = "Steps per day")
+```
 
 
 ## What is the average daily activity pattern?
 
+The original data shows the number of steps taken per 5-minute interval. We can calculate the average steps per 5 minute across all days to show the typical daily pattern. To do this we first group by 5 minute interval, then we summarise the mean steps per interval.  
+Note: missing values are removed when calculating the mean.
 
+```{r average daily pattern}
+perinterval <- activity %>%
+        group_by(interval) %>%
+        summarise(average_steps = mean(steps, na.rm = TRUE))
+```
+
+We can present this data in a time series. Intervals have the format: hhmm.
+```{r time series}
+g <- ggplot(perinterval, aes(interval, average_steps)) + 
+        geom_line() + 
+        ggtitle("Average steps per 5 minute interval across all days") +
+        xlab("interval (hhmm)") +
+        ylab("average steps")
+g
+```
+
+We can identify the maximum value in the above data by using filter() and max()
+```{r max}
+maxinterval <- filter(perinterval, average_steps == max(average_steps))[,1]
+max <- round(filter(perinterval, average_steps == max(average_steps))[,2])
+```
+
+The 5-minute interval with the maximum average number of steps is **`r maxinterval`** which has **`r max`** steps
 
 ## Imputing missing values
 
+We can calculate the number of missing values
+```{r missing}
+n <- length(activity$steps)
+missing <- sum(is.na(activity$steps))
+```
+Out of **`r n`** observations there are **`r missing`** missing values
 
+We can impute missing values using the per interval averages calculated above.  
+To do this we create two new objects: a copy of the original data frame, and new data frame consisting of repeated copies of the average day. We then replace the missing in the new data frame with the corresponding values in the repeated average day.
+```{r impute missing}
+activityest <- activity
+perintervalrep <- perinterval[rep(seq(nrow(perinterval)), 61),]
+
+for(i in 1:17568){
+        if(is.na(activityest[(i),1])){
+                activityest[(i),1] <- perintervalrep[[(i),2]]        
+        }
+}
+```
+
+We can now repeat the above analysis on the new data frame to calculate the total estimated steps per day
+```{r steps per day est}
+perdayest <- activityest %>%
+        group_by(date) %>%
+        summarise(steps = sum(steps))
+```
+
+We can then plot a new histogram of the estimated number of steps per day.
+```{r histogram est, warning=FALSE}
+histest <- ggplot(perdayest, aes(date, steps))
+histest + geom_histogram(stat="identity")
+```
+
+We can also calculate the new mean and median number of steps per day.
+```{r mean median est}
+meanest <- mean(perdayest$steps)
+medianest <- median(perdayest$steps)
+options(scipen = 1)
+```
+The new mean number of steps per day **`r round(meanest)`**. It has not changed because we have imputed mean values.  
+The median number of steps per day is **`r round(medianest)`**. It has increased by one step.
+
+Another way to visualise this is to compare the frequency distributions of the data before and after imputing values. Here's the original...
+
+```{r imputing hist 1, fig.width=4, fig.height=3, warning=FALSE, echo=FALSE}
+scat <- ggplot(perday, aes(steps))
+scat + geom_histogram(binwidth = 500) + coord_cartesian(ylim = c(0,11))
+```
+
+...and here's the new one...
+
+```{r imputing hist 2, fig.width=4, fig.height=3, warning=FALSE, echo=FALSE}
+scatest <- ggplot(perdayest, aes(steps))
+scatest + geom_histogram(binwidth = 500)
+```
+
+...notice they look the same except for big bar in the centre with all the imputed values.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+To compare weekdays with weekends we first create a factor variable using cut()
+```{r cut}
+activityest2 <- activityest %>% 
+        mutate(weekend = (cut(wday(activity$date), 
+                              breaks = c(0,5,7), 
+                              labels = c("weekday", "weekend"))))
+```
+
+We can then group and summarise by interval and weekday
+```{r interval weekday}
+perinterval2 <- activityest2 %>%
+        group_by(interval, weekend) %>%
+        summarise(average_steps = mean(steps))
+```
+
+Finally, we can create a panel of two time series plots showing the average number of steps per 5 minute interval across weekdays and weekends
+```{r weekday weekend}
+g <- ggplot(perinterval2, aes(interval, average_steps)) + 
+        geom_line() + 
+        facet_grid(weekend ~ .) +
+        ggtitle("Average steps per 5 minute interval across all days") +
+        xlab("interval (hhmm)") +
+        ylab("average steps")
+g
+```
+
+This person is most active in the morning with little activity during the day, suggesting an office job. 
+At weekends this person gets up in the morning at a similar time, they are moderately more active in the afternoon and they go to bed at a similar time.
+
+Thank you for reading!
