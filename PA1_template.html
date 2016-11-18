@@ -150,7 +150,7 @@ hist + geom_histogram(stat=&quot;identity&quot;) + labs(title = &quot;Steps per 
 </div>
 <div id="what-is-the-average-daily-activity-pattern" class="section level2">
 <h2>What is the average daily activity pattern?</h2>
-<p>The original data shows the number of steps taken per 5-minute interval. We can calculate the average steps per 5 minute across all days to show the typical daily pattern. To do this we first group by 5 minute interval, then we summarise the mean steps per interval.<br />
+<p>The original data shows the number of steps taken per 5-minute interval. We can calculate the average steps per 5 minute interval across all days to show the typical daily pattern. To do this we first group by 5 minute interval, then we summarise the mean steps per interval.<br />
 Note: missing values are removed when calculating the mean.</p>
 <pre class="r"><code>perinterval &lt;- activity %&gt;%
         group_by(interval) %&gt;%
@@ -175,7 +175,7 @@ max &lt;- round(filter(perinterval, average_steps == max(average_steps))[,2])</c
 missing &lt;- sum(is.na(activity$steps))</code></pre>
 <p>Out of <strong>17568</strong> observations there are <strong>2304</strong> missing values</p>
 <p>We can impute missing values using the per interval averages calculated above.<br />
-To do this we create two new objects: a copy of the original data frame, and new data frame consisting of repeated copies of the average day. We then replace the missing in the new data frame with the corresponding values in the repeated average day.</p>
+To do this we create two new objects: a copy of the original data frame, and data frame consisting of repeated copies of the average day. We then replace the missing values in the copied data frame with the corresponding values in the repeated average day.</p>
 <pre class="r"><code>activityest &lt;- activity
 perintervalrep &lt;- perinterval[rep(seq(nrow(perinterval)), 61),]
 
@@ -184,7 +184,7 @@ for(i in 1:17568){
                 activityest[(i),1] &lt;- perintervalrep[[(i),2]]        
         }
 }</code></pre>
-<p>We can now repeat the above analysis on the new data frame to calculate the total estimated steps per day</p>
+<p>We can now repeat the above analysis on the new data frame to calculate the total estimated steps per day.</p>
 <pre class="r"><code>perdayest &lt;- activityest %&gt;%
         group_by(date) %&gt;%
         summarise(steps = sum(steps))</code></pre>

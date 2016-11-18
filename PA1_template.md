@@ -49,7 +49,7 @@ hist + geom_histogram(stat="identity") + labs(title = "Steps per day")
 
 ## What is the average daily activity pattern?
 
-The original data shows the number of steps taken per 5-minute interval. We can calculate the average steps per 5 minute across all days to show the typical daily pattern. To do this we first group by 5 minute interval, then we summarise the mean steps per interval.  
+The original data shows the number of steps taken per 5-minute interval. We can calculate the average steps per 5 minute interval across all days to show the typical daily pattern. To do this we first group by 5 minute interval, then we summarise the mean steps per interval.  
 Note: missing values are removed when calculating the mean.
 
 
@@ -92,7 +92,7 @@ missing <- sum(is.na(activity$steps))
 Out of **17568** observations there are **2304** missing values
 
 We can impute missing values using the per interval averages calculated above.  
-To do this we create two new objects: a copy of the original data frame, and new data frame consisting of repeated copies of the average day. We then replace the missing in the new data frame with the corresponding values in the repeated average day.
+To do this we create two new objects: a copy of the original data frame, and data frame consisting of repeated copies of the average day. We then replace the missing values in the copied data frame with the corresponding values in the repeated average day.
 
 ```r
 activityest <- activity
@@ -105,7 +105,7 @@ for(i in 1:17568){
 }
 ```
 
-We can now repeat the above analysis on the new data frame to calculate the total estimated steps per day
+We can now repeat the above analysis on the new data frame to calculate the total estimated steps per day.
 
 ```r
 perdayest <- activityest %>%
