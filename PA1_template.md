@@ -136,20 +136,26 @@ The median number of steps per day is **10766**. It has increased by just one st
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-To compare weekdays with weekends we first create a factor variable using cut()
+To compare weekdays with weekends we first create a factor variable using wday() then recode.
 
 ```r
 activityest2 <- activityest %>% 
-        mutate(weekend = (cut(wday(activity$date), 
-                              breaks = c(0,5,7), 
-                              labels = c("weekday", "weekend"))))
+        mutate(day = wday(activity$date, label = TRUE)) %>%
+        mutate(day = recode(day, 
+                            "Mon" = "weekday", 
+                            "Tues" = "weekday", 
+                            "Wed" = "weekday", 
+                            "Thurs" = "weekday", 
+                            "Fri" = "weekday", 
+                            "Sat" = "weekend", 
+                            "Sun" = "weekend"))
 ```
 
 We can then group and summarise by interval and weekday
 
 ```r
 perinterval2 <- activityest2 %>%
-        group_by(interval, weekend) %>%
+        group_by(interval, day) %>%
         summarise(average_steps = mean(steps))
 ```
 
@@ -158,7 +164,7 @@ Finally, we can create a panel of two time series plots showing the average numb
 ```r
 g <- ggplot(perinterval2, aes(interval, average_steps)) + 
         geom_line() + 
-        facet_grid(weekend ~ .) +
+        facet_grid(day ~ .) +
         ggtitle("Average steps per 5 minute interval across all days") +
         xlab("interval (hhmm)") +
         ylab("average steps")
@@ -168,6 +174,6 @@ g
 ![](PA1_template_files/figure-html/weekday weekend-1.png)<!-- -->
 
 This person is most active in the morning with little activity during the day, suggesting an office job. 
-At weekends this person gets up in the morning at a similar time, they are moderately more active in the afternoon and they go to bed at a similar time.
+At weekends this person gets up in the morning at a similar time, they are more active in the afternoon and they go to bed at a similar time.
 
 Thank you for reading!
