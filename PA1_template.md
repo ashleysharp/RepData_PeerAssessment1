@@ -40,11 +40,11 @@ The median number of steps per day is **10765**
 We can also plot a histogram of the number of steps per day.
 
 ```r
-hist <- ggplot(perday, aes(date, steps))
-hist + geom_histogram(stat="identity") + labs(title = "Steps per day")
+scat <- ggplot(perday, aes(steps))
+scat + geom_histogram(binwidth = 500) + coord_cartesian(ylim = c(0,11))
 ```
 
-![](PA1_template_files/figure-html/histogram-1.png)<!-- -->
+![](PA1_template_files/figure-html/imputing hist 1-1.png)<!-- -->
 
 
 ## What is the average daily activity pattern?
@@ -116,11 +116,13 @@ perdayest <- activityest %>%
 We can then plot a new histogram of the estimated number of steps per day.
 
 ```r
-histest <- ggplot(perdayest, aes(date, steps))
-histest + geom_histogram(stat="identity")
+scatest <- ggplot(perdayest, aes(steps))
+scatest + geom_histogram(binwidth = 500)
 ```
 
-![](PA1_template_files/figure-html/histogram est-1.png)<!-- -->
+![](PA1_template_files/figure-html/imputing hist 2-1.png)<!-- -->
+
+Notice the big bar in the centre with all the imputed values.
 
 We can also calculate the new mean and median number of steps per day.
 
@@ -130,17 +132,7 @@ medianest <- median(perdayest$steps)
 options(scipen = 1)
 ```
 The new mean number of steps per day **10766**. It has not changed because we have imputed mean values.  
-The median number of steps per day is **10766**. It has increased by one step.
-
-Another way to visualise this is to compare the frequency distributions of the data before and after imputing values. Here's the original...
-
-![](PA1_template_files/figure-html/imputing hist 1-1.png)<!-- -->
-
-...and here's the new one...
-
-![](PA1_template_files/figure-html/imputing hist 2-1.png)<!-- -->
-
-...notice they look the same except for big bar in the centre with all the imputed values.
+The median number of steps per day is **10766**. It has increased by just one step.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 

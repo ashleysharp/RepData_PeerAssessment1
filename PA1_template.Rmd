@@ -39,9 +39,9 @@ The mean number of steps per day is **`r round(mean)`**
 The median number of steps per day is **`r median`**
 
 We can also plot a histogram of the number of steps per day.
-```{r histogram, warning=FALSE}
-hist <- ggplot(perday, aes(date, steps))
-hist + geom_histogram(stat="identity") + labs(title = "Steps per day")
+```{r imputing hist 1, warning=FALSE}
+scat <- ggplot(perday, aes(steps))
+scat + geom_histogram(binwidth = 500) + coord_cartesian(ylim = c(0,11))
 ```
 
 
@@ -104,10 +104,12 @@ perdayest <- activityest %>%
 ```
 
 We can then plot a new histogram of the estimated number of steps per day.
-```{r histogram est, warning=FALSE}
-histest <- ggplot(perdayest, aes(date, steps))
-histest + geom_histogram(stat="identity")
+```{r imputing hist 2, warning=FALSE}
+scatest <- ggplot(perdayest, aes(steps))
+scatest + geom_histogram(binwidth = 500)
 ```
+
+Notice the big bar in the centre with all the imputed values.
 
 We can also calculate the new mean and median number of steps per day.
 ```{r mean median est}
@@ -116,23 +118,7 @@ medianest <- median(perdayest$steps)
 options(scipen = 1)
 ```
 The new mean number of steps per day **`r round(meanest)`**. It has not changed because we have imputed mean values.  
-The median number of steps per day is **`r round(medianest)`**. It has increased by one step.
-
-Another way to visualise this is to compare the frequency distributions of the data before and after imputing values. Here's the original...
-
-```{r imputing hist 1, fig.width=4, fig.height=3, warning=FALSE, echo=FALSE}
-scat <- ggplot(perday, aes(steps))
-scat + geom_histogram(binwidth = 500) + coord_cartesian(ylim = c(0,11))
-```
-
-...and here's the new one...
-
-```{r imputing hist 2, fig.width=4, fig.height=3, warning=FALSE, echo=FALSE}
-scatest <- ggplot(perdayest, aes(steps))
-scatest + geom_histogram(binwidth = 500)
-```
-
-...notice they look the same except for big bar in the centre with all the imputed values.
+The median number of steps per day is **`r round(medianest)`**. It has increased by just one step.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
